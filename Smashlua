@@ -1,0 +1,74 @@
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 100, 0, 100) -- Smaller size
+button.Position = UDim2.new(1, -120, 0, 50) -- Positioned a bit up and to the right
+button.AnchorPoint = Vector2.new(1, 0) -- Anchor to the top-right corner for better alignment
+button.BackgroundColor3 = Color3.new(0, 0, 0) -- Black background
+button.Text = "Smash"
+button.TextColor3 = Color3.new(1, 1, 1) -- White text
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 20
+button.Parent = screenGui
+
+button.ClipsDescendants = true -- Ensures the button content clips to the shape
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1, 0) -- Makes the button fully circular
+corner.Parent = button
+
+local countdownLabel = Instance.new("TextLabel")
+countdownLabel.Size = UDim2.new(0, 200, 0, 50) -- Size of the countdown label
+countdownLabel.Position = UDim2.new(0.5, -100, 1, -60) -- Centered at the bottom of the screen
+countdownLabel.AnchorPoint = Vector2.new(0.5, 1)
+countdownLabel.BackgroundColor3 = Color3.new(0, 0, 0) -- Black background
+countdownLabel.TextColor3 = Color3.new(1, 1, 0) -- Yellow text
+countdownLabel.Font = Enum.Font.SourceSansBold
+countdownLabel.TextSize = 24
+countdownLabel.Text = ""
+countdownLabel.Visible = false -- Hidden until countdown starts
+countdownLabel.Parent = screenGui
+
+local cooldownTime = 5.5 -- Cooldown time in seconds
+local canClick = true
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://17274903927"
+
+button.MouseButton1Click:Connect(function()
+    if canClick then
+        canClick = false -- Disable clicking during cooldown
+        
+        -- Play the animation
+        local animationTrack = humanoid:LoadAnimation(animation)
+        animationTrack:Play()
+
+        
+        local args1 = {
+            [1] = "UseAbility",
+            [2] = rootPart.CFrame.Position -- Character's current position
+        }
+        game:GetService("ReplicatedStorage").GeneralAbility:FireServer(unpack(args1))
+
+        
+        local args2 = {
+            [1] = "Ban Hammer"
+        }
+        game:GetService("ReplicatedStorage").RetroAbility:FireServer(unpack(args2))
+
+       
+        countdownLabel.Visible = true
+        for i = cooldownTime, 0, -0.1 do
+            countdownLabel.Text = string.format("%.1f", i)
+            task.wait(0.1)
+        end
+        countdownLabel.Visible = false
+       
+        canClick = true
+    end
+end)
